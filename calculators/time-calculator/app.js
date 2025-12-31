@@ -10,16 +10,26 @@ function initCalculator() {
         return;
     }
 
-    // Populate Map Sizes
+    // 1. Populate Map Sizes (Cleaned Format)
     const mapSel = document.getElementById('mapSize');
     mapSel.innerHTML = '';
     SERVER_DATA.mapSizes.forEach(s => {
         const opt = document.createElement('option');
         opt.value = s;
-        opt.innerText = `${s}x${s} (R${s})`;
-        if(s === 100) opt.selected = true; // Default 100
+        opt.innerText = `${s}x${s}`; // Removed (R100) etc.
+        if(s === 100) opt.selected = true; 
         mapSel.appendChild(opt);
     });
+
+    // 2. Populate Tournament Square (Dropdown 0-20)
+    const tsSel = document.getElementById('tsLevel');
+    tsSel.innerHTML = '';
+    for(let i=0; i<=20; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.innerText = i === 0 ? "Level 0 (None)" : `Level ${i}`;
+        tsSel.appendChild(opt);
+    }
 
     // Populate Artifacts
     const artSel = document.getElementById('artifactSelect');
@@ -41,7 +51,17 @@ function initCalculator() {
         tribeSel.appendChild(opt);
     });
 
+    // 3. Initialize Departure Time with Current Time
+    setNowAsDeparture();
+
     updateUnits();
+}
+
+function setNowAsDeparture() {
+    const now = new Date();
+    // Adjust to local timezone for datetime-local input
+    const localIso = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+    document.getElementById('departureTime').value = localIso;
 }
 
 function updateUnits() {
@@ -75,7 +95,6 @@ function calculate() {
     let tsLevel = parseInt(document.getElementById('tsLevel').value) || 0;
     
     // --- DISTANCE CALCULATION ---
-    // User Formula: Map Width = Radius * 2 + 1
     const mapWidth = (radius * 2) + 1;
 
     const getAxisDist = (a, b) => {
@@ -88,29 +107,23 @@ function calculate() {
     const dY = getAxisDist(y1, y2);
     const dist = Math.sqrt((dX * dX) + (dY * dY));
 
-    document.getElementById('res-dist').innerText = dist.toFixed(2);
+    // 4. Distance 1 decimal
+    document.getElementById('res-dist').innerText = dist.toFixed(1);
 
     // --- TIME CALCULATION ---
     if(baseUnitSpeed <= 0) return;
 
-    // Apply Artifact Bonus to Speed (Equivalent to User's Formula)
     const effectiveSpeed = baseUnitSpeed * serverSpeed * artifact;
     
     let timeHours = 0;
     const tsThreshold = 20;
 
-    // Apply Tournament Square
     if (tsLevel > 0 && dist > tsThreshold) {
-        // First 20 fields @ Normal Speed
         const t1 = tsThreshold / effectiveSpeed;
-
-        // Remaining fields @ Boosted Speed
         if(tsLevel > 20) tsLevel = 20;
         const tsFactor = SERVER_DATA.tsFactors[tsLevel] || 1.0; 
-        
         const remainingDist = dist - tsThreshold;
         const t2 = remainingDist / (effectiveSpeed * tsFactor);
-
         timeHours = t1 + t2;
     } else {
         timeHours = dist / effectiveSpeed;
@@ -125,6 +138,15 @@ function calculate() {
     const pad = (n) => n < 10 ? '0'+n : n;
     document.getElementById('res-time').innerText = `${h}:${pad(m)}:${pad(s)}`;
 
-    const arrival = new Date(new Date().getTime() + totalSecs * 1000);
-    document.getElementById('res-arrival').innerText = arrival.toLocaleTimeString();
+    // 5. Calculate Arrival based on Departure Input
+    const depVal = document.getElementById('departureTime').value;
+    if(depVal) {
+        const departureDate = new Date(depVal);
+        const arrivalDate = new Date(departureDate.getTime() + totalSecs * 1000);
+        
+        // Format: European (en-GB is usually dd/mm/yyyy)
+        document.getElementById('res-arrival').innerText = arrivalDate.toLocaleString('en-GB');
+    } else {
+        document.getElementById('res-arrival').innerText = "-";
+    }
 }
