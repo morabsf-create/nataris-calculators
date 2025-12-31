@@ -3,17 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Travel Time Calculator - Nataris</title>
+    <title>Travel Time Calculator</title>
     <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        /* Minimal layout styles in case style.css is missing specific grid classes */
+        .row { display: flex; gap: 15px; margin-bottom: 15px; }
+        .col { flex: 1; }
+        .divider { border-top: 1px solid #444; margin: 20px 0; }
+        label { display: block; margin-bottom: 5px; color: #aaa; }
+        input, select { width: 100%; padding: 8px; box-sizing: border-box; }
+        .results { margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.2); border-left: 4px solid #7fb069; }
+        .result-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .result-val { font-weight: bold; color: #fff; }
+    </style>
 </head>
 <body>
 
-    <div style="width: 100%; max-width: 500px; margin: 20px auto 0;">
-        <a href="../../index.html" class="nav-link">← Back to Hub</a>
-    </div>
-
     <div class="container">
-        <h2>Travel Time Calculator</h2>
+        <a href="../../index.html" style="color: #888; text-decoration: none; font-size: 0.9em;">&larr; Back to Hub</a>
+        
+        <h2 style="border-bottom: 1px solid #444; padding-bottom: 10px;">Travel Time Calculator</h2>
 
         <div class="row">
             <div class="col">
@@ -52,35 +61,34 @@
         <div class="row">
             <div class="col">
                 <label>Troop Speed</label>
-                <input type="number" id="speed" value="3" placeholder="fields/hour">
+                <input type="number" id="speed" value="3">
             </div>
             <div class="col">
                 <label>Artifact Speed</label>
-                <select id="artSpeed">
-                    </select>
+                <select id="artSpeed"></select>
             </div>
         </div>
 
-        <div class="divider"></div>
-
-        <div class="col">
-            <label>Departure Time</label>
-            <input type="datetime-local" id="departureTime">
+        <div class="row">
+            <div class="col">
+                <label>Departure Time</label>
+                <input type="datetime-local" id="departureTime">
+            </div>
         </div>
 
-        <button class="btn" onclick="calculate()">Calculate</button>
+        <button onclick="calculate()" style="width:100%; padding: 12px; background: #7fb069; border:none; color:white; font-weight:bold; cursor:pointer;">Calculate</button>
 
-        <div class="results" id="output">
+        <div class="results" id="output" style="display:none;">
             <div class="result-row">
-                <span>Distance</span>
+                <span>Distance:</span>
                 <span class="result-val" id="resDistance">0.0</span>
             </div>
             <div class="result-row">
-                <span>Duration</span>
+                <span>Duration:</span>
                 <span class="result-val" id="resDuration">00:00:00</span>
             </div>
             <div class="result-row">
-                <span>Arrival Time</span>
+                <span>Arrival Time:</span>
                 <span class="result-val" id="resArrival">--:--:--</span>
             </div>
         </div>
@@ -89,83 +97,79 @@
     <script src="../../data/servers.js"></script>
     
     <script>
-        // --- 1. INITIALIZATION ---
+        // Init form with data from servers.js
         window.onload = function() {
-            // A. Populate Map Sizes (No "R" prefix)
+            // 1. Populate Map Size (Raw numbers)
             const mapSelect = document.getElementById('mapSize');
-            SERVER_DATA.mapSizes.forEach(size => {
-                let opt = document.createElement('option');
-                opt.value = size;
-                opt.text = `${size}x${size}`;
-                if (size === 400) opt.selected = true; // Default to 400
-                mapSelect.appendChild(opt);
-            });
+            if (typeof SERVER_DATA !== 'undefined') {
+                SERVER_DATA.mapSizes.forEach(size => {
+                    let opt = document.createElement('option');
+                    opt.value = size;
+                    opt.text = size; // Just the number
+                    if(size === 400) opt.selected = true;
+                    mapSelect.appendChild(opt);
+                });
 
-            // B. Populate Tournament Square (0 to 20)
-            const tsSelect = document.getElementById('tsLevel');
-            // We use the index of tsFactors as the level
-            SERVER_DATA.tsFactors.forEach((factor, level) => {
-                let opt = document.createElement('option');
-                opt.value = factor; // Store the multiplier directly as value
-                opt.text = level === 0 ? "None (0)" : level;
-                tsSelect.appendChild(opt);
-            });
+                // 2. Populate TS (0-20)
+                const tsSelect = document.getElementById('tsLevel');
+                // We use the index of tsFactors as the level
+                SERVER_DATA.tsFactors.forEach((factor, level) => {
+                    let opt = document.createElement('option');
+                    opt.value = factor; 
+                    opt.text = level === 0 ? "None" : level;
+                    tsSelect.appendChild(opt);
+                });
 
-            // C. Populate Artifacts
-            const artSelect = document.getElementById('artSpeed');
-            SERVER_DATA.artifacts.forEach(art => {
-                let opt = document.createElement('option');
-                opt.value = art.value;
-                opt.text = art.name;
-                artSelect.appendChild(opt);
-            });
+                // 3. Populate Artifacts
+                const artSelect = document.getElementById('artSpeed');
+                SERVER_DATA.artifacts.forEach(art => {
+                    let opt = document.createElement('option');
+                    opt.value = art.value;
+                    opt.text = art.name;
+                    artSelect.appendChild(opt);
+                });
+            }
 
-            // D. Set Default Departure to NOW
+            // 4. Set Default Time to Now
             const now = new Date();
-            // Adjust to local ISO string for input value
             now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
             document.getElementById('departureTime').value = now.toISOString().slice(0, 16);
         };
 
-        // --- 2. CALCULATION LOGIC ---
         function calculate() {
-            // Inputs
-            const x1 = parseFloat(document.getElementById('startX').value) || 0;
-            const y1 = parseFloat(document.getElementById('startY').value) || 0;
-            const x2 = parseFloat(document.getElementById('targetX').value) || 0;
-            const y2 = parseFloat(document.getElementById('targetY').value) || 0;
+            // Get inputs
+            let x1 = parseFloat(document.getElementById('startX').value) || 0;
+            let y1 = parseFloat(document.getElementById('startY').value) || 0;
+            let x2 = parseFloat(document.getElementById('targetX').value) || 0;
+            let y2 = parseFloat(document.getElementById('targetY').value) || 0;
             
-            const mapSize = parseInt(document.getElementById('mapSize').value);
-            const baseSpeed = parseFloat(document.getElementById('speed').value);
-            const artMultiplier = parseFloat(document.getElementById('artSpeed').value);
-            const tsMultiplier = parseFloat(document.getElementById('tsLevel').value); // This is the factor (e.g., 2.5)
+            let mapSize = parseInt(document.getElementById('mapSize').value) || 400;
+            let speed = parseFloat(document.getElementById('speed').value) || 3;
+            let artFactor = parseFloat(document.getElementById('artSpeed').value) || 1;
+            let tsFactor = parseFloat(document.getElementById('tsLevel').value) || 1;
 
-            // 1. Calculate Toroidal Distance (Map Wrap)
+            // 1. Distance Calculation (Toroidal/Wrapping)
             let dx = Math.abs(x1 - x2);
             let dy = Math.abs(y1 - y2);
-            
-            let distX = Math.min(dx, mapSize - dx);
-            let distY = Math.min(dy, mapSize - dy);
-            
-            let distance = Math.sqrt(distX**2 + distY**2);
+            let dist_x = Math.min(dx, mapSize - dx);
+            let dist_y = Math.min(dy, mapSize - dy);
+            let distance = Math.sqrt(dist_x**2 + dist_y**2);
 
-            // OUTPUT 1: Distance (1 decimal place)
+            // Output Distance (1 decimal)
             document.getElementById('resDistance').innerText = distance.toFixed(1);
 
-            // 2. Calculate Time (in seconds)
-            // Logic: Effective Speed = Base * Artifact
-            // TS Logic: usually applies after 20 fields.
-            // If dist <= 20: Time = Dist / EffSpeed
-            // If dist > 20:  Time = (20 / EffSpeed) + ((Dist - 20) / (EffSpeed * TSMultiplier))
+            // 2. Time Calculation
+            // Effective Speed
+            let effSpeed = speed * artFactor;
             
-            const effSpeed = baseSpeed * artMultiplier;
             let totalSeconds = 0;
-
+            
+            // TS Logic: TS only affects distance > 20 fields
             if (distance <= 20) {
                 totalSeconds = (distance / effSpeed) * 3600;
             } else {
                 let timeFirst20 = (20 / effSpeed) * 3600;
-                let timeRest = ((distance - 20) / (effSpeed * tsMultiplier)) * 3600;
+                let timeRest = ((distance - 20) / (effSpeed * tsFactor)) * 3600;
                 totalSeconds = timeFirst20 + timeRest;
             }
 
@@ -174,23 +178,21 @@
             let m = Math.floor((totalSeconds % 3600) / 60);
             let s = Math.floor(totalSeconds % 60);
             document.getElementById('resDuration').innerText = 
-                `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 
-            // 3. Calculate Arrival Time
-            let depVal = document.getElementById('departureTime').value;
-            let depDate = depVal ? new Date(depVal) : new Date();
-            
-            let arrDate = new Date(depDate.getTime() + (totalSeconds * 1000));
+            // 3. Arrival Time
+            let depInput = document.getElementById('departureTime').value;
+            let startTime = depInput ? new Date(depInput) : new Date();
+            let arrivalTime = new Date(startTime.getTime() + (totalSeconds * 1000));
 
-            // OUTPUT 2: European Standard (24h)
-            document.getElementById('resArrival').innerText = arrDate.toLocaleTimeString('en-GB', {
+            // Format Arrival (European 24h)
+            document.getElementById('resArrival').innerText = arrivalTime.toLocaleTimeString('en-GB', {
                 hour12: false,
                 hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit'
             });
 
-            // Show results
             document.getElementById('output').style.display = 'block';
         }
     </script>
