@@ -5,6 +5,15 @@
     <title>Travel Time - Nataris Tools</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        .coord-inputs { display: flex; gap: 10px; }
+        .coord-inputs input { text-align: center; flex: 1; }
+        .distance-display {
+            background: #dbe6f6; border: 1px solid #bdc3c7;
+            padding: 12px; text-align: center; border-radius: 4px;
+            margin: 20px 0; color: #2c3e50; font-weight: bold;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -12,75 +21,70 @@
         <h1>❄️ Travel Time</h1>
 
         <div class="input-row">
-            <div class="input-group">
+            <div class="input-group" style="flex:1">
                 <label>Server Speed</label>
                 <select id="serverSpeed" onchange="calculate()">
                     <option value="1">1x</option>
                     <option value="2">2x</option>
-                    <option value="3" selected>3x (Nataris)</option>
-                    <option value="5">5x</option>
-                    <option value="10">10x</option>
+                    <option value="3">3x</option>
+                    <option value="5" selected>5x</option> <option value="10">10x</option>
                 </select>
             </div>
-            <div class="input-group">
-                <label>Map Size</label>
-                <select id="mapSize" onchange="calculate()"></select>
+            <div class="input-group" style="flex:1">
+                <label>Map Radius</label>
+                <select id="mapSize" onchange="calculate()">
+                    </select>
             </div>
         </div>
 
         <div class="input-row">
-            <div class="input-group">
-                <label>Start X | Y</label>
-                <div style="display:flex; gap:5px;">
-                    <input type="number" id="x1" placeholder="0" oninput="calculate()">
-                    <input type="number" id="y1" placeholder="0" oninput="calculate()">
-                </div>
-            </div>
-            <div class="input-group">
-                <label>Target X | Y</label>
-                <div style="display:flex; gap:5px;">
-                    <input type="number" id="x2" placeholder="0" oninput="calculate()">
-                    <input type="number" id="y2" placeholder="0" oninput="calculate()">
-                </div>
-            </div>
-        </div>
-
-        <div class="input-row">
-            <div class="input-group">
-                <label>Tribe</label>
-                <select id="tribeSelect" onchange="updateUnits()"></select>
-            </div>
-            <div class="input-group">
-                <label>Unit</label>
-                <select id="unitSelect" onchange="calculate()"></select>
-            </div>
-        </div>
-
-        <div class="input-row">
-            <div class="input-group">
+            <div class="input-group" style="flex:1">
                 <label>Artifact</label>
-                <select id="artifactSelect" onchange="calculate()"></select>
+                <select id="artifactSelect" onchange="calculate()">
+                    </select>
             </div>
-            <div class="input-group">
-                <label>Tournament Sq. (0-20)</label>
+            <div class="input-group" style="flex:1">
+                <label>Tournament Sq. (Lvl)</label>
                 <input type="number" id="tsLevel" value="0" min="0" max="20" oninput="calculate()">
             </div>
         </div>
 
-        <div id="result" class="result-box">
-            <div class="input-row" style="justify-content: space-around;">
-                <div>
-                    <span class="res-label">Distance</span>
-                    <span id="res-dist" style="display:block; font-weight:bold; font-size:1.2rem;">0</span>
-                </div>
-                <div>
-                    <span class="res-label">Base Speed</span>
-                    <span id="res-speed" style="display:block; font-weight:bold; font-size:1.2rem;">0</span>
-                </div>
+        <div class="input-row">
+            <div class="input-group" style="flex:1">
+                <label>Tribe</label>
+                <select id="tribeSelect" onchange="updateUnits()">
+                    </select>
             </div>
-            
-            <hr style="border:0; border-top:1px solid #ccc; margin:15px 0;">
+            <div class="input-group" style="flex:1">
+                <label>Unit</label>
+                <select id="unitSelect" onchange="calculate()">
+                    </select>
+            </div>
+        </div>
 
+        <hr style="border:0; border-top:1px solid #bdc3c7; margin: 15px 0;">
+
+        <div class="input-group">
+            <label>Start Coordinates (X | Y)</label>
+            <div class="coord-inputs">
+                <input type="number" id="x1" placeholder="X" oninput="calculate()">
+                <input type="number" id="y1" placeholder="Y" oninput="calculate()">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>Target Coordinates (X | Y)</label>
+            <div class="coord-inputs">
+                <input type="number" id="x2" placeholder="X" oninput="calculate()">
+                <input type="number" id="y2" placeholder="Y" oninput="calculate()">
+            </div>
+        </div>
+
+        <div class="distance-display">
+            Distance: <span id="res-dist">0.00</span> fields
+        </div>
+
+        <div id="result" class="result-box" style="display:block;">
             <span class="res-label">Travel Time</span>
             <span id="res-time" class="res-val">0:00:00</span>
             
