@@ -9,6 +9,9 @@
         .coord-inputs { display: flex; gap: 10px; }
         .coord-inputs input { text-align: center; flex: 1; }
         
+        /* Fix for mobile alignment: align inputs to the bottom */
+        .input-row { align-items: flex-end; }
+
         .match-row {
             background: #fff;
             border-bottom: 1px solid #eee;
@@ -34,10 +37,26 @@
             border: 1px solid #ddd;
             background: #f9f9f9;
         }
+        
         /* Danger Levels */
         .danger-cata { background-color: #fadbd8; border-color: #e74c3c; color: #c0392b; font-weight: bold; }
-        /* Orange for Rams and Admins */
         .danger-ram { background-color: #fdebd0; border-color: #e67e22; color: #d35400; font-weight: bold; }
+
+        /* Calculation Details Box */
+        .calc-details {
+            background: #dbe6f6;
+            border: 1px solid #bdc3c7;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #2c3e50;
+            display: none; /* Hidden by default */
+        }
+        .calc-details strong { display: block; margin-bottom: 5px; font-size: 1rem; }
+        .calc-row { display: flex; justify-content: space-between; border-bottom: 1px solid #ccd1d1; padding: 5px 0; }
+        .calc-row:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
@@ -110,12 +129,31 @@
             Enter times and coordinates to see potential units.
         </div>
 
-        <div id="results-area" class="result-box" style="display:none; text-align: left; padding: 0;">
-            <div style="background:#e8f6f3; padding: 10px; border-bottom:1px solid #a2d9ce; text-align:center; font-weight:bold; color:#16a085;">
-                Matching Units
-            </div>
-            <div id="matches-list">
+        <div id="results-area" style="display:none; margin-top: 25px;">
+            
+            <div id="calc-details" class="calc-details" style="display:block;">
+                <strong>Calculation Data</strong>
+                <div class="calc-row">
+                    <span>Distance:</span>
+                    <span id="disp-dist" style="font-weight:bold">-</span>
                 </div>
+                <div class="calc-row">
+                    <span>Required Speed:</span>
+                    <span id="disp-speed" style="font-weight:bold">-</span>
+                </div>
+                <div class="calc-row">
+                    <span>Travel Time Window:</span>
+                    <span id="disp-time" style="font-weight:bold">-</span>
+                </div>
+            </div>
+
+            <div class="result-box" style="display:block; text-align: left; padding: 0;">
+                <div style="background:#e8f6f3; padding: 10px; border-bottom:1px solid #a2d9ce; text-align:center; font-weight:bold; color:#16a085;">
+                    Matching Units
+                </div>
+                <div id="matches-list">
+                    </div>
+            </div>
         </div>
     </div>
 

@@ -43,24 +43,28 @@ function initTool() {
 }
 
 function parseTimeStr(str) {
-    if(!str) return null; // Return null to indicate empty/invalid
+    if(!str) return null; 
     const parts = str.split(':').map(Number);
     let seconds = 0;
     
-    // Support HH:MM:SS (3 parts) or HH:MM (2 parts)
     if (parts.length === 3) { 
         seconds = (parts[0] * 3600) + (parts[1] * 60) + parts[2];
     } else if (parts.length === 2) { 
         seconds = (parts[0] * 3600) + (parts[1] * 60);
     } else if (parts.length === 1) {
-        seconds = parts[0]; // Treat single number as seconds or hours? Usually implies Seconds if raw, but context implies duration. 
-        // Let's assume user might type just hours, but to be safe, let's treat as seconds if just one number, 
-        // OR return null to force correct format.
-        // For robustness, let's allow it but rely on the placeholder to guide them.
+        seconds = parts[0]; 
     } else {
         return null;
     }
     return isNaN(seconds) ? null : seconds;
+}
+
+function formatSecs(totalSecs) {
+    const h = Math.floor(totalSecs / 3600);
+    const m = Math.floor((totalSecs % 3600) / 60);
+    const s = totalSecs % 60;
+    const pad = (n) => n < 10 ? '0'+n : n;
+    return `${h}:${pad(m)}:${pad(s)}`;
 }
 
 function analyze() {
@@ -69,12 +73,8 @@ function analyze() {
     const x2 = parseInt(document.getElementById('x2').value);
     const y2 = parseInt(document.getElementById('y2').value);
     
-    // 1. Mandatory Coordinates
-    if(isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
-        return; 
-    }
+    if(isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) return; 
 
-    // 2. Mandatory Time Inputs
     const timeStr = document.getElementById('timeToLand').value;
     const bufferStr = document.getElementById('buffer').value;
 
@@ -93,9 +93,6 @@ function analyze() {
         return;
     }
 
-    // Logic: 
-    // Minimum Travel Time = The countdown we see now (durationSec)
-    // Maximum Travel Time = The countdown + the time since we last checked (bufferSec)
     const minTime = durationSec;
     const maxTime = durationSec + bufferSec;
 
@@ -111,24 +108,33 @@ function analyze() {
     const dY = getAxisDist(y1, y2);
     const dist = Math.sqrt((dX * dX) + (dY * dY));
 
+    // --- Speed Calc ---
+    // Speed = Distance / Time (in hours)
+    // Min Speed required comes from MAX time.
+    // Max Speed required comes from MIN time.
+    const minSpeedReq = dist / (maxTime / 3600);
+    const maxSpeedReq = dist / (minTime / 3600);
+
+    // Update Detail Box
+    document.getElementById('disp-dist').innerText = dist.toFixed(1);
+    document.getElementById('disp-speed').innerText = `${minSpeedReq.toFixed(1)} - ${maxSpeedReq.toFixed(1)} f/h`;
+    document.getElementById('disp-time').innerText = `${formatSecs(minTime)} - ${formatSecs(maxTime)}`;
+
     // --- Check Units ---
     const serverSpeed = parseFloat(document.getElementById('serverSpeed').value);
     const artifact = parseFloat(document.getElementById('artifactSelect').value) || 1.0;
     const tribe = document.getElementById('tribeSelect').value;
     const units = SERVER_DATA.units[tribe] || [];
-
     const matchesByTS = {}; 
-
-    // Filter Out List
     const ignoredUnits = ["Settler", "Scout", "Pathfinder", "Equites Legati"];
 
-    // Loop TS Levels 0 to 20
+    let matchCount = 0;
+
     for(let ts = 0; ts <= 20; ts++) {
         const tsFactor = ts === 0 ? 1.0 : (SERVER_DATA.tsFactors[ts] || 1.0);
         const tsThreshold = 20;
 
         units.forEach(u => {
-            // Skip ignored units
             if(ignoredUnits.includes(u.name)) return;
 
             const baseSpeed = u.speed;
@@ -147,38 +153,34 @@ function analyze() {
             const totalSecs = Math.round(timeHours * 3600);
 
             // Time Window Check
-            // We use a small epsilon (1 sec) for rounding errors
             if (totalSecs >= (minTime - 1) && totalSecs <= (maxTime + 1)) {
                 if(!matchesByTS[ts]) matchesByTS[ts] = [];
                 matchesByTS[ts].push(u.name);
+                matchCount++;
             }
         });
     }
 
-    renderResults(matchesByTS, dist);
+    renderResults(matchesByTS, matchCount);
 }
 
-function renderResults(matches, dist) {
-    const box = document.getElementById('results-area');
+function renderResults(matches, count) {
+    const area = document.getElementById('results-area');
     const list = document.getElementById('matches-list');
     const msg = document.getElementById('status-msg');
     
     list.innerHTML = '';
-    
-    // Reset message style
     msg.style.color = "#7f8c8d";
+    area.style.display = 'block';
+    msg.style.display = 'none';
 
-    const levels = Object.keys(matches).sort((a,b) => a - b);
-    
-    if(levels.length === 0) {
-        box.style.display = 'none';
-        msg.style.display = 'block';
-        msg.innerText = `Distance: ${dist.toFixed(1)}. No matching units found in that time window.`;
+    if(count === 0) {
+        // Show box but indicate no matches
+        list.innerHTML = '<div style="padding:15px; text-align:center; color:#e74c3c;">No units match this speed profile.</div>';
         return;
     }
 
-    box.style.display = 'block';
-    msg.style.display = 'none';
+    const levels = Object.keys(matches).sort((a,b) => a - b);
 
     levels.forEach(lvl => {
         const row = document.createElement('div');
@@ -197,13 +199,9 @@ function renderResults(matches, dist) {
             span.innerText = uName;
             
             const lower = uName.toLowerCase();
-
-            // Highlighting Logic
-            // 1. Catapults (Red)
             if(lower.includes('catapult') || lower.includes('trebuchet')) {
                 span.classList.add('danger-cata');
             } 
-            // 2. Rams & Admins (Orange)
             else if(
                 lower.includes('ram') || 
                 lower.includes('senator') || 
