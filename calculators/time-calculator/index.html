@@ -2,199 +2,98 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>Travel Time - Nataris Tools</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Travel Time Calculator</title>
     <link rel="stylesheet" href="../../css/style.css">
     <style>
-        /* Minimal layout styles in case style.css is missing specific grid classes */
-        .row { display: flex; gap: 15px; margin-bottom: 15px; }
-        .col { flex: 1; }
-        .divider { border-top: 1px solid #444; margin: 20px 0; }
-        label { display: block; margin-bottom: 5px; color: #aaa; }
-        input, select { width: 100%; padding: 8px; box-sizing: border-box; }
-        .results { margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.2); border-left: 4px solid #7fb069; }
-        .result-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-        .result-val { font-weight: bold; color: #fff; }
+        .coord-inputs { display: flex; gap: 10px; }
+        .coord-inputs input { text-align: center; flex: 1; }
+        .distance-display {
+            background: #dbe6f6; border: 1px solid #bdc3c7;
+            padding: 12px; text-align: center; border-radius: 4px;
+            margin: 20px 0; color: #2c3e50; font-weight: bold;
+        }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <a href="../../index.html" style="color: #888; text-decoration: none; font-size: 0.9em;">&larr; Back to Hub</a>
-        
-        <h2 style="border-bottom: 1px solid #444; padding-bottom: 10px;">Travel Time Calculator</h2>
+        <a href="../../index.html" class="back-link">&larr; Back to Hub</a>
+        <h1>❄️ Travel Time</h1>
 
-        <div class="row">
-            <div class="col">
-                <label>Start X</label>
-                <input type="number" id="startX" placeholder="0">
+        <div class="input-row">
+            <div class="input-group" style="flex:1">
+                <label>Server Speed</label>
+                <select id="serverSpeed" onchange="calculate()">
+                    <option value="1">1x</option>
+                    <option value="2">2x</option>
+                    <option value="3">3x</option>
+                    <option value="5" selected>5x</option> <option value="10">10x</option>
+                </select>
             </div>
-            <div class="col">
-                <label>Start Y</label>
-                <input type="number" id="startY" placeholder="0">
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <label>Target X</label>
-                <input type="number" id="targetX" placeholder="0">
-            </div>
-            <div class="col">
-                <label>Target Y</label>
-                <input type="number" id="targetY" placeholder="0">
+            <div class="input-group" style="flex:1">
+                <label>Map Radius</label>
+                <select id="mapSize" onchange="calculate()">
+                    </select>
             </div>
         </div>
 
-        <div class="divider"></div>
-
-        <div class="row">
-            <div class="col">
-                <label>Map Size</label>
-                <select id="mapSize"></select>
+        <div class="input-row">
+            <div class="input-group" style="flex:1">
+                <label>Artifact</label>
+                <select id="artifactSelect" onchange="calculate()">
+                    </select>
             </div>
-            <div class="col">
-                <label>Tournament Square</label>
-                <select id="tsLevel"></select>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col">
-                <label>Troop Speed</label>
-                <input type="number" id="speed" value="3">
-            </div>
-            <div class="col">
-                <label>Artifact Speed</label>
-                <select id="artSpeed"></select>
+            <div class="input-group" style="flex:1">
+                <label>Tournament Sq. (Lvl)</label>
+                <input type="number" id="tsLevel" value="0" min="0" max="20" oninput="calculate()">
             </div>
         </div>
 
-        <div class="row">
-            <div class="col">
-                <label>Departure Time</label>
-                <input type="datetime-local" id="departureTime">
+        <div class="input-row">
+            <div class="input-group" style="flex:1">
+                <label>Tribe</label>
+                <select id="tribeSelect" onchange="updateUnits()">
+                    </select>
+            </div>
+            <div class="input-group" style="flex:1">
+                <label>Unit</label>
+                <select id="unitSelect" onchange="calculate()">
+                    </select>
             </div>
         </div>
 
-        <button onclick="calculate()" style="width:100%; padding: 12px; background: #7fb069; border:none; color:white; font-weight:bold; cursor:pointer;">Calculate</button>
+        <hr style="border:0; border-top:1px solid #bdc3c7; margin: 15px 0;">
 
-        <div class="results" id="output" style="display:none;">
-            <div class="result-row">
-                <span>Distance:</span>
-                <span class="result-val" id="resDistance">0.0</span>
+        <div class="input-group">
+            <label>Start Coordinates (X | Y)</label>
+            <div class="coord-inputs">
+                <input type="number" id="x1" placeholder="X" oninput="calculate()">
+                <input type="number" id="y1" placeholder="Y" oninput="calculate()">
             </div>
-            <div class="result-row">
-                <span>Duration:</span>
-                <span class="result-val" id="resDuration">00:00:00</span>
+        </div>
+
+        <div class="input-group">
+            <label>Target Coordinates (X | Y)</label>
+            <div class="coord-inputs">
+                <input type="number" id="x2" placeholder="X" oninput="calculate()">
+                <input type="number" id="y2" placeholder="Y" oninput="calculate()">
             </div>
-            <div class="result-row">
-                <span>Arrival Time:</span>
-                <span class="result-val" id="resArrival">--:--:--</span>
-            </div>
+        </div>
+
+        <div class="distance-display">
+            Distance: <span id="res-dist">0.00</span> fields
+        </div>
+
+        <div id="result" class="result-box" style="display:block;">
+            <span class="res-label">Travel Time</span>
+            <span id="res-time" class="res-val">0:00:00</span>
+            
+            <span class="res-label">Arrival Time</span>
+            <span id="res-arrival" style="display:block; font-weight:bold; color:#2980b9;">-</span>
         </div>
     </div>
 
     <script src="../../data/servers.js"></script>
-    
-    <script>
-        // Init form with data from servers.js
-        window.onload = function() {
-            // 1. Populate Map Size (Raw numbers)
-            const mapSelect = document.getElementById('mapSize');
-            if (typeof SERVER_DATA !== 'undefined') {
-                SERVER_DATA.mapSizes.forEach(size => {
-                    let opt = document.createElement('option');
-                    opt.value = size;
-                    opt.text = size; // Just the number
-                    if(size === 400) opt.selected = true;
-                    mapSelect.appendChild(opt);
-                });
-
-                // 2. Populate TS (0-20)
-                const tsSelect = document.getElementById('tsLevel');
-                // We use the index of tsFactors as the level
-                SERVER_DATA.tsFactors.forEach((factor, level) => {
-                    let opt = document.createElement('option');
-                    opt.value = factor; 
-                    opt.text = level === 0 ? "None" : level;
-                    tsSelect.appendChild(opt);
-                });
-
-                // 3. Populate Artifacts
-                const artSelect = document.getElementById('artSpeed');
-                SERVER_DATA.artifacts.forEach(art => {
-                    let opt = document.createElement('option');
-                    opt.value = art.value;
-                    opt.text = art.name;
-                    artSelect.appendChild(opt);
-                });
-            }
-
-            // 4. Set Default Time to Now
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            document.getElementById('departureTime').value = now.toISOString().slice(0, 16);
-        };
-
-        function calculate() {
-            // Get inputs
-            let x1 = parseFloat(document.getElementById('startX').value) || 0;
-            let y1 = parseFloat(document.getElementById('startY').value) || 0;
-            let x2 = parseFloat(document.getElementById('targetX').value) || 0;
-            let y2 = parseFloat(document.getElementById('targetY').value) || 0;
-            
-            let mapSize = parseInt(document.getElementById('mapSize').value) || 400;
-            let speed = parseFloat(document.getElementById('speed').value) || 3;
-            let artFactor = parseFloat(document.getElementById('artSpeed').value) || 1;
-            let tsFactor = parseFloat(document.getElementById('tsLevel').value) || 1;
-
-            // 1. Distance Calculation (Toroidal/Wrapping)
-            let dx = Math.abs(x1 - x2);
-            let dy = Math.abs(y1 - y2);
-            let dist_x = Math.min(dx, mapSize - dx);
-            let dist_y = Math.min(dy, mapSize - dy);
-            let distance = Math.sqrt(dist_x**2 + dist_y**2);
-
-            // Output Distance (1 decimal)
-            document.getElementById('resDistance').innerText = distance.toFixed(1);
-
-            // 2. Time Calculation
-            // Effective Speed
-            let effSpeed = speed * artFactor;
-            
-            let totalSeconds = 0;
-            
-            // TS Logic: TS only affects distance > 20 fields
-            if (distance <= 20) {
-                totalSeconds = (distance / effSpeed) * 3600;
-            } else {
-                let timeFirst20 = (20 / effSpeed) * 3600;
-                let timeRest = ((distance - 20) / (effSpeed * tsFactor)) * 3600;
-                totalSeconds = timeFirst20 + timeRest;
-            }
-
-            // Format Duration
-            let h = Math.floor(totalSeconds / 3600);
-            let m = Math.floor((totalSeconds % 3600) / 60);
-            let s = Math.floor(totalSeconds % 60);
-            document.getElementById('resDuration').innerText = 
-                `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-
-            // 3. Arrival Time
-            let depInput = document.getElementById('departureTime').value;
-            let startTime = depInput ? new Date(depInput) : new Date();
-            let arrivalTime = new Date(startTime.getTime() + (totalSeconds * 1000));
-
-            // Format Arrival (European 24h)
-            document.getElementById('resArrival').innerText = arrivalTime.toLocaleTimeString('en-GB', {
-                hour12: false,
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-
-            document.getElementById('output').style.display = 'block';
-        }
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
