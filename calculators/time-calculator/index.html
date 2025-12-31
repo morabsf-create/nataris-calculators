@@ -2,98 +2,283 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Travel Time - Nataris Tools</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../../css/style.css">
+    <title>Ravina March Calculator</title>
     <style>
-        .coord-inputs { display: flex; gap: 10px; }
-        .coord-inputs input { text-align: center; flex: 1; }
-        .distance-display {
-            background: #dbe6f6; border: 1px solid #bdc3c7;
-            padding: 12px; text-align: center; border-radius: 4px;
-            margin: 20px 0; color: #2c3e50; font-weight: bold;
+        :root {
+            --bg-color: #1e1e24;
+            --card-bg: #2b2b36;
+            --accent: #4a90e2;
+            --accent-hover: #357abd;
+            --text-main: #ffffff;
+            --text-muted: #b0b3b8;
+            --border: #444450;
+            --input-bg: #18181d;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-weight: 300;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+        }
+
+        .row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        input, select {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        /* Specific styling for the datetime input to match dark theme */
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent);
+        }
+
+        .divider {
+            margin: 20px 0;
+            border-top: 1px dashed var(--border);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .results {
+            background-color: var(--input-bg);
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .result-item span:last-child {
+            font-weight: bold;
+            color: var(--accent);
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <a href="../../index.html" class="back-link">&larr; Back to Hub</a>
-        <h1>❄️ Travel Time</h1>
 
-        <div class="input-row">
-            <div class="input-group" style="flex:1">
-                <label>Server Speed</label>
-                <select id="serverSpeed" onchange="calculate()">
-                    <option value="1">1x</option>
-                    <option value="2">2x</option>
-                    <option value="3">3x</option>
-                    <option value="5" selected>5x</option> <option value="10">10x</option>
-                </select>
-            </div>
-            <div class="input-group" style="flex:1">
-                <label>Map Radius</label>
-                <select id="mapSize" onchange="calculate()">
-                    </select>
-            </div>
+<div class="container">
+    <h2>March Calculator</h2>
+
+    <div class="row">
+        <div class="col">
+            <label>Start X</label>
+            <input type="number" id="startX" placeholder="0">
         </div>
-
-        <div class="input-row">
-            <div class="input-group" style="flex:1">
-                <label>Artifact</label>
-                <select id="artifactSelect" onchange="calculate()">
-                    </select>
-            </div>
-            <div class="input-group" style="flex:1">
-                <label>Tournament Sq. (Lvl)</label>
-                <input type="number" id="tsLevel" value="0" min="0" max="20" oninput="calculate()">
-            </div>
+        <div class="col">
+            <label>Start Y</label>
+            <input type="number" id="startY" placeholder="0">
         </div>
-
-        <div class="input-row">
-            <div class="input-group" style="flex:1">
-                <label>Tribe</label>
-                <select id="tribeSelect" onchange="updateUnits()">
-                    </select>
-            </div>
-            <div class="input-group" style="flex:1">
-                <label>Unit</label>
-                <select id="unitSelect" onchange="calculate()">
-                    </select>
-            </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <label>Target X</label>
+            <input type="number" id="targetX" placeholder="0">
         </div>
-
-        <hr style="border:0; border-top:1px solid #bdc3c7; margin: 15px 0;">
-
-        <div class="input-group">
-            <label>Start Coordinates (X | Y)</label>
-            <div class="coord-inputs">
-                <input type="number" id="x1" placeholder="X" oninput="calculate()">
-                <input type="number" id="y1" placeholder="Y" oninput="calculate()">
-            </div>
-        </div>
-
-        <div class="input-group">
-            <label>Target Coordinates (X | Y)</label>
-            <div class="coord-inputs">
-                <input type="number" id="x2" placeholder="X" oninput="calculate()">
-                <input type="number" id="y2" placeholder="Y" oninput="calculate()">
-            </div>
-        </div>
-
-        <div class="distance-display">
-            Distance: <span id="res-dist">0.00</span> fields
-        </div>
-
-        <div id="result" class="result-box" style="display:block;">
-            <span class="res-label">Travel Time</span>
-            <span id="res-time" class="res-val">0:00:00</span>
-            
-            <span class="res-label">Arrival Time</span>
-            <span id="res-arrival" style="display:block; font-weight:bold; color:#2980b9;">-</span>
+        <div class="col">
+            <label>Target Y</label>
+            <input type="number" id="targetY" placeholder="0">
         </div>
     </div>
 
-    <script src="../../data/servers.js"></script>
-    <script src="app.js"></script>
+    <div class="divider"></div>
+
+    <div class="row">
+        <div class="col">
+            <label>Map Size</label>
+            <select id="mapSize">
+                <option value="128">128 x 128</option>
+                <option value="256">256 x 256</option>
+                <option value="512">512 x 512</option>
+                <option value="1024">1024 x 1024</option>
+            </select>
+        </div>
+        <div class="col">
+            <label>Tournament Square</label>
+            <select id="tourneyLevel">
+                </select>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <label>March Speed (%)</label>
+            <input type="number" id="speed" value="100">
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="col">
+        <label>Start Date & Time</label>
+        <input type="datetime-local" id="startTimeInput">
+    </div>
+
+    <button onclick="calculate()">Calculate March</button>
+
+    <div class="results" id="output" style="display:none;">
+        <div class="result-item">
+            <span>Distance:</span>
+            <span id="resDistance">0.0</span>
+        </div>
+        <div class="result-item">
+            <span>Travel Time:</span>
+            <span id="resTravelTime">00:00:00</span>
+        </div>
+        <div class="result-item">
+            <span>Arrival Time:</span>
+            <span id="resArrival">00:00:00</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. Populate Dropdown 1-20
+    const tourneySelect = document.getElementById('tourneyLevel');
+    for (let i = 1; i <= 20; i++) {
+        let option = document.createElement('option');
+        option.value = i;
+        option.text = i;
+        tourneySelect.appendChild(option);
+    }
+
+    // 2. Set Default Date to NOW (Local Time)
+    function setDefaultTime() {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('startTimeInput').value = now.toISOString().slice(0, 16);
+    }
+    setDefaultTime();
+
+    function calculate() {
+        // --- INPUTS ---
+        const x1 = parseFloat(document.getElementById('startX').value) || 0;
+        const y1 = parseFloat(document.getElementById('startY').value) || 0;
+        const x2 = parseFloat(document.getElementById('targetX').value) || 0;
+        const y2 = parseFloat(document.getElementById('targetY').value) || 0;
+        const mapSize = parseInt(document.getElementById('mapSize').value) || 512;
+        const speed = parseFloat(document.getElementById('speed').value) || 100;
+        const startInputVal = document.getElementById('startTimeInput').value;
+
+        // --- DISTANCE CALCULATION (Wrapping Map) ---
+        // Formula: SQRT( (MIN(ABS(Xa-Xb), map-ABS(Xa-Xb)))^2 + ... )
+        let absX = Math.abs(x1 - x2);
+        let absY = Math.abs(y1 - y2);
+
+        let deltaX = Math.min(absX, mapSize - absX);
+        let deltaY = Math.min(absY, mapSize - absY);
+
+        let distance = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
+
+        // Display Distance (1 decimal)
+        document.getElementById('resDistance').innerText = distance.toFixed(1);
+
+        // --- TIME CALCULATION ---
+        // Placeholder: (Distance / Speed) * 60 seconds.
+        // Adjust this formula if your game uses a different speed multiplier.
+        let travelSeconds = (distance / (speed / 100)) * 60;
+
+        // Format Travel Time (HH:MM:SS)
+        let h = Math.floor(travelSeconds / 3600);
+        let m = Math.floor((travelSeconds % 3600) / 60);
+        let s = Math.floor(travelSeconds % 60);
+        document.getElementById('resTravelTime').innerText = 
+            `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+
+        // --- ARRIVAL TIME ---
+        // Use the User Input time as the start basis
+        let startDate = startInputVal ? new Date(startInputVal) : new Date();
+        let arrivalDate = new Date(startDate.getTime() + (travelSeconds * 1000));
+
+        // Format: European Standard (24h)
+        let arrivalString = arrivalDate.toLocaleTimeString('en-GB', { 
+            hour12: false, 
+            hour: "2-digit", 
+            minute: "2-digit", 
+            second: "2-digit" 
+        });
+
+        document.getElementById('resArrival').innerText = arrivalString;
+
+        // Show Output
+        document.getElementById('output').style.display = 'block';
+    }
+</script>
+
 </body>
 </html>

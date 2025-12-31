@@ -1,157 +1,157 @@
-/* css/style.css */
+/* NATARIS TOOLS - MASTER STYLE */
 :root {
-    /* Frozen Legion Palette */
-    --bg-color: #ecf0f1;             /* Light Grey/Snow */
-    --container-bg: #ffffff;         /* Pure White */
-    --primary-text: #2c3e50;         /* Dark Slate */
-    --accent-blue: #3498db;          /* Ice Blue */
-    --accent-dark: #2980b9;          /* Deep Blue */
-    --border-color: #bdc3c7;         /* Silver */
-    --card-bg: #fdfdfd;
-    --card-hover: #eaf2f8;           /* Faint Blue Hover */
-    --shadow: rgba(44, 62, 80, 0.1);
+    /* Colors */
+    --bg-body: #1b1b1b;       /* Very Dark Grey */
+    --bg-card: #2e2e2e;       /* Card Background */
+    --bg-input: #121212;      /* Black input background */
+    
+    /* Travian/Nataris Accents */
+    --accent: #7fb069;        /* Muted Green (Travian-ish) */
+    --accent-hover: #9bc588;  
+    --text-main: #e0e0e0;     /* Off-white text */
+    --text-muted: #888;       
+    --border: #444;
+    
+    --radius: 6px;
 }
 
-html { box-sizing: border-box; }
-*, *:before, *:after { box-sizing: inherit; }
-
 body {
-    font-family: 'Roboto', sans-serif; /* Clean, modern font */
-    background-color: var(--bg-color);
-    background-image: linear-gradient(to bottom, #dbe6f6 0%, #ecf0f1 100%); /* Subtle icy gradient */
-    color: var(--primary-text);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-main);
     margin: 0;
-    padding: 10px; /* Small padding for mobile */
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     min-height: 100vh;
 }
 
-/* Main Container */
+/* Common Container */
 .container {
-    max-width: 800px; /* Narrower max-width for better mobile focus */
-    margin: 0 auto;
-    background-color: var(--container-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    box-shadow: 0 4px 15px var(--shadow);
-    padding: 20px;
+    background-color: var(--bg-card);
+    padding: 30px;
+    border-radius: var(--radius);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    width: 100%;
+    max-width: 500px;
+    margin-top: 20px;
+    border: 1px solid #3a3a3a;
 }
 
 /* Headers */
-h1, h2, h3 {
-    color: var(--primary-text);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-top: 0;
+h1, h2 {
     text-align: center;
+    font-weight: 400;
+    margin-top: 0;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
-h1 {
-    border-bottom: 3px solid var(--accent-blue);
+h2 {
+    border-bottom: 1px solid var(--border);
     padding-bottom: 15px;
     margin-bottom: 25px;
-    font-size: 1.5rem; /* Mobile friendly size */
+    font-size: 1.5rem;
 }
 
-/* Links & Navigation */
-a { text-decoration: none; color: inherit; }
-.back-link {
-    display: inline-block;
-    color: var(--accent-blue);
-    font-weight: bold;
+/* Navigation Link (Back to Home) */
+.nav-link {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
     margin-bottom: 15px;
-    padding: 5px 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    background: #f8f9fa;
+    display: inline-block;
+    transition: color 0.2s;
 }
+.nav-link:hover { color: var(--accent); }
 
-/* Hub Grid (Menu) */
-.hub-grid {
-    display: grid;
-    grid-template-columns: 1fr; /* Default mobile: 1 column */
-    gap: 15px;
-}
-@media (min-width: 600px) {
-    .hub-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
-/* Tool Cards */
-.tool-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-left: 5px solid var(--accent-blue); /* Icy Accent */
-    border-radius: 6px;
-    padding: 20px;
-    transition: transform 0.2s, background-color 0.2s;
-    cursor: pointer;
-}
-.tool-card:hover {
-    transform: translateY(-3px);
-    background-color: var(--card-hover);
-    box-shadow: 0 5px 15px var(--shadow);
-}
-.tool-icon { font-size: 2rem; display: block; margin-bottom: 10px; text-align: center; }
-.tool-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; color: var(--accent-dark); text-align: center; }
-.tool-desc { font-size: 0.9rem; color: #7f8c8d; text-align: center; }
-
-/* Form Elements (Mobile Optimized) */
-.input-group { margin-bottom: 15px; }
-.input-group label {
+/* Forms */
+label {
     display: block;
     font-size: 0.8rem;
-    font-weight: bold;
-    color: #7f8c8d;
-    text-transform: uppercase;
+    color: var(--text-muted);
     margin-bottom: 5px;
+    margin-top: 10px;
+    text-transform: uppercase;
 }
-.input-row { display: flex; gap: 10px; }
+
 input, select {
     width: 100%;
-    padding: 12px; /* Larger touch target */
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
+    background-color: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 10px;
+    border-radius: var(--radius);
+    box-sizing: border-box; /* Fixes width issues */
     font-size: 1rem;
-    background: #fbfbfb;
 }
+
 input:focus, select:focus {
-    border-color: var(--accent-blue);
+    border-color: var(--accent);
     outline: none;
-    background: #fff;
+}
+
+/* Dark mode Calendar Icon fix */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+/* Layout Grid */
+.row {
+    display: flex;
+    gap: 15px;
+}
+.col {
+    flex: 1;
+}
+
+.divider {
+    border-top: 1px dashed var(--border);
+    margin: 20px 0;
 }
 
 /* Buttons */
 .btn {
-    display: block;
     width: 100%;
-    padding: 15px;
-    background-color: var(--accent-blue);
-    color: white;
-    font-weight: bold;
-    text-align: center;
+    padding: 12px;
+    background-color: var(--accent);
+    color: #1b1b1b;
     border: none;
-    border-radius: 6px;
-    font-size: 1.1rem;
+    border-radius: var(--radius);
+    font-weight: bold;
     cursor: pointer;
+    margin-top: 20px;
     text-transform: uppercase;
-    margin-top: 10px;
+    transition: background 0.2s;
 }
-.btn:active { background-color: var(--accent-dark); }
+
+.btn:hover {
+    background-color: var(--accent-hover);
+}
 
 /* Results Section */
-.result-box {
-    margin-top: 25px;
-    padding: 20px;
-    background-color: #e8f6f3; /* Very light green/blue */
-    border: 1px solid #a2d9ce;
-    border-radius: 6px;
-    text-align: center;
-    display: none; /* Hidden by default */
+.results {
+    background-color: var(--bg-input);
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: var(--radius);
+    border-left: 3px solid var(--accent);
+    display: none;
 }
-.res-val {
-    font-size: 2rem;
-    font-weight: bold;
-    color: var(--accent-dark);
-    display: block;
-    margin: 10px 0;
+
+.result-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid #222;
 }
-.res-label { font-size: 0.8rem; text-transform: uppercase; color: #7f8c8d; }
+.result-row:last-child { border-bottom: none; }
+
+.result-val {
+    color: var(--accent);
+    font-family: monospace;
+    font-size: 1.1rem;
+}
