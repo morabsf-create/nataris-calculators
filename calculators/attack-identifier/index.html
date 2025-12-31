@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Attack Identifier - Nataris Tools</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        .coord-inputs { display: flex; gap: 10px; }
+        .coord-inputs input { text-align: center; flex: 1; }
+        
+        /* Specific styles for the results list */
+        .match-row {
+            background: #fff;
+            border-bottom: 1px solid #eee;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .match-row:last-child { border-bottom: none; }
+        .ts-badge {
+            background: #34495e; color: #fff; 
+            padding: 4px 8px; border-radius: 4px; 
+            font-size: 0.8rem; font-weight: bold;
+        }
+        .unit-list { text-align: right; }
+        .unit-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-left: 5px;
+            margin-bottom: 2px;
+            font-size: 0.9rem;
+            border: 1px solid #ddd;
+            background: #f9f9f9;
+        }
+        /* Danger Levels */
+        .danger-cata { background-color: #fadbd8; border-color: #e74c3c; color: #c0392b; font-weight: bold; }
+        .danger-ram { background-color: #fdebd0; border-color: #e67e22; color: #d35400; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../../index.html" class="back-link">&larr; Back to Hub</a>
+        <h1>🛡️ Attack Identifier</h1>
+
+        <div class="input-row">
+            <div class="input-group" style="flex:1">
+                <label>Server Speed</label>
+                <select id="serverSpeed" onchange="analyze()">
+                    <option value="1">1x</option>
+                    <option value="2">2x</option>
+                    <option value="3">3x</option>
+                    <option value="5" selected>5x</option> <option value="10">10x</option>
+                </select>
+            </div>
+            <div class="input-group" style="flex:1">
+                <label>Map Radius</label>
+                <select id="mapSize" onchange="analyze()">
+                    </select>
+            </div>
+        </div>
+
+        <div class="input-row">
+            <div class="input-group" style="flex:1">
+                <label>Attacker Artifact</label>
+                <select id="artifactSelect" onchange="analyze()">
+                    </select>
+            </div>
+            <div class="input-group" style="flex:1">
+                <label>Attacker Tribe</label>
+                <select id="tribeSelect" onchange="analyze()">
+                    </select>
+            </div>
+        </div>
+
+        <hr style="border:0; border-top:1px solid #bdc3c7; margin: 15px 0;">
+
+        <div class="input-row">
+            <div class="input-group" style="flex:1">
+                <label>Time to Land (HH:MM:SS)</label>
+                <input type="text" id="timeToLand" placeholder="e.g. 2:34:45" onchange="analyze()">
+            </div>
+            <div class="input-group" style="flex:1">
+                <label>Buffer (HH:MM)</label>
+                <input type="text" id="buffer" placeholder="e.g. 1:00" onchange="analyze()">
+            </div>
+        </div>
+
+        <hr style="border:0; border-top:1px solid #bdc3c7; margin: 15px 0;">
+
+        <div class="input-group">
+            <label>Attacker Start (X | Y)</label>
+            <div class="coord-inputs">
+                <input type="number" id="x1" placeholder="X" oninput="analyze()">
+                <input type="number" id="y1" placeholder="Y" oninput="analyze()">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>My Village (X | Y)</label>
+            <div class="coord-inputs">
+                <input type="number" id="x2" placeholder="X" oninput="analyze()">
+                <input type="number" id="y2" placeholder="Y" oninput="analyze()">
+            </div>
+        </div>
+
+        <div id="status-msg" style="text-align:center; color:#7f8c8d; margin-top:15px; font-style:italic;">
+            Enter times and coordinates to see potential units.
+        </div>
+
+        <div id="results-area" class="result-box" style="display:none; text-align: left; padding: 0;">
+            <div style="background:#e8f6f3; padding: 10px; border-bottom:1px solid #a2d9ce; text-align:center; font-weight:bold; color:#16a085;">
+                Matching Units
+            </div>
+            <div id="matches-list">
+                </div>
+        </div>
+    </div>
+
+    <script src="../../data/servers.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
