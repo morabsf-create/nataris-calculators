@@ -9,7 +9,6 @@
         .coord-inputs { display: flex; gap: 10px; }
         .coord-inputs input { text-align: center; flex: 1; }
         
-        /* Specific styles for the results list */
         .match-row {
             background: #fff;
             border-bottom: 1px solid #eee;
@@ -37,6 +36,7 @@
         }
         /* Danger Levels */
         .danger-cata { background-color: #fadbd8; border-color: #e74c3c; color: #c0392b; font-weight: bold; }
+        /* Orange for Rams and Admins */
         .danger-ram { background-color: #fdebd0; border-color: #e67e22; color: #d35400; font-weight: bold; }
     </style>
 </head>
@@ -79,12 +79,12 @@
 
         <div class="input-row">
             <div class="input-group" style="flex:1">
-                <label>Time to Land (HH:MM:SS)</label>
-                <input type="text" id="timeToLand" placeholder="e.g. 2:34:45" onchange="analyze()">
+                <label>Time to Land (HH:MM:SS) *</label>
+                <input type="text" id="timeToLand" placeholder="HH:MM:SS" onchange="analyze()">
             </div>
             <div class="input-group" style="flex:1">
-                <label>Buffer (HH:MM)</label>
-                <input type="text" id="buffer" placeholder="e.g. 1:00" onchange="analyze()">
+                <label>Buffer (HH:MM:SS) *</label>
+                <input type="text" id="buffer" placeholder="HH:MM:SS" onchange="analyze()">
             </div>
         </div>
 

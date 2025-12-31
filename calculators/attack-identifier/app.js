@@ -43,21 +43,24 @@ function initTool() {
 }
 
 function parseTimeStr(str) {
-    // Expected formats: HH:MM:SS or HH:MM or just SS (unlikely but safe)
-    if(!str) return 0;
+    if(!str) return null; // Return null to indicate empty/invalid
     const parts = str.split(':').map(Number);
     let seconds = 0;
     
-    if (parts.length === 3) { // H:M:S
+    // Support HH:MM:SS (3 parts) or HH:MM (2 parts)
+    if (parts.length === 3) { 
         seconds = (parts[0] * 3600) + (parts[1] * 60) + parts[2];
-    } else if (parts.length === 2) { // H:M (usually) or M:S? 
-        // Logic: If user enters 1:00 in buffer, usually means 1 hour.
-        // Standard convention for inputs > 2 digits usually implies H:M
+    } else if (parts.length === 2) { 
         seconds = (parts[0] * 3600) + (parts[1] * 60);
     } else if (parts.length === 1) {
-        seconds = parts[0];
+        seconds = parts[0]; // Treat single number as seconds or hours? Usually implies Seconds if raw, but context implies duration. 
+        // Let's assume user might type just hours, but to be safe, let's treat as seconds if just one number, 
+        // OR return null to force correct format.
+        // For robustness, let's allow it but rely on the placeholder to guide them.
+    } else {
+        return null;
     }
-    return seconds;
+    return isNaN(seconds) ? null : seconds;
 }
 
 function analyze() {
@@ -66,22 +69,33 @@ function analyze() {
     const x2 = parseInt(document.getElementById('x2').value);
     const y2 = parseInt(document.getElementById('y2').value);
     
-    // Validate required inputs
+    // 1. Mandatory Coordinates
     if(isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
         return; 
     }
 
+    // 2. Mandatory Time Inputs
     const timeStr = document.getElementById('timeToLand').value;
-    if(!timeStr) return;
-    
-    const bufferStr = document.getElementById('buffer').value || "0:00";
+    const bufferStr = document.getElementById('buffer').value;
+
+    if(!timeStr || !bufferStr) {
+        document.getElementById('status-msg').innerText = "Please enter both Time to Land and Buffer.";
+        document.getElementById('status-msg').style.color = "red";
+        document.getElementById('results-area').style.display = 'none';
+        return;
+    }
 
     const durationSec = parseTimeStr(timeStr);
     const bufferSec = parseTimeStr(bufferStr);
 
-    // Range: 
-    // The attack could have been launched "Now" (travelTime = durationSec)
-    // OR "Buffer ago" (travelTime = durationSec + bufferSec)
+    if(durationSec === null || bufferSec === null) {
+        document.getElementById('status-msg').innerText = "Invalid time format. Use HH:MM:SS";
+        return;
+    }
+
+    // Logic: 
+    // Minimum Travel Time = The countdown we see now (durationSec)
+    // Maximum Travel Time = The countdown + the time since we last checked (bufferSec)
     const minTime = durationSec;
     const maxTime = durationSec + bufferSec;
 
@@ -103,7 +117,10 @@ function analyze() {
     const tribe = document.getElementById('tribeSelect').value;
     const units = SERVER_DATA.units[tribe] || [];
 
-    const matchesByTS = {}; // Key: TS Level, Value: Array of unit names
+    const matchesByTS = {}; 
+
+    // Filter Out List
+    const ignoredUnits = ["Settler", "Scout", "Pathfinder", "Equites Legati"];
 
     // Loop TS Levels 0 to 20
     for(let ts = 0; ts <= 20; ts++) {
@@ -111,6 +128,9 @@ function analyze() {
         const tsThreshold = 20;
 
         units.forEach(u => {
+            // Skip ignored units
+            if(ignoredUnits.includes(u.name)) return;
+
             const baseSpeed = u.speed;
             const effectiveSpeed = baseSpeed * serverSpeed * artifact;
             let timeHours = 0;
@@ -126,8 +146,8 @@ function analyze() {
 
             const totalSecs = Math.round(timeHours * 3600);
 
-            // Check if this calculated time fits in our window
-            // Allow small margin of error (e.g. +/- 1 second) due to rounding
+            // Time Window Check
+            // We use a small epsilon (1 sec) for rounding errors
             if (totalSecs >= (minTime - 1) && totalSecs <= (maxTime + 1)) {
                 if(!matchesByTS[ts]) matchesByTS[ts] = [];
                 matchesByTS[ts].push(u.name);
@@ -145,6 +165,9 @@ function renderResults(matches, dist) {
     
     list.innerHTML = '';
     
+    // Reset message style
+    msg.style.color = "#7f8c8d";
+
     const levels = Object.keys(matches).sort((a,b) => a - b);
     
     if(levels.length === 0) {
@@ -174,9 +197,19 @@ function renderResults(matches, dist) {
             span.innerText = uName;
             
             const lower = uName.toLowerCase();
+
+            // Highlighting Logic
+            // 1. Catapults (Red)
             if(lower.includes('catapult') || lower.includes('trebuchet')) {
                 span.classList.add('danger-cata');
-            } else if(lower.includes('ram')) {
+            } 
+            // 2. Rams & Admins (Orange)
+            else if(
+                lower.includes('ram') || 
+                lower.includes('senator') || 
+                lower.includes('chief') || 
+                lower.includes('chieftain')
+            ) {
                 span.classList.add('danger-ram');
             }
             
