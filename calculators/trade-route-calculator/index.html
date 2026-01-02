@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Trade Route Calculator - Nataris Tools</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        .wood-icon { color: #27ae60; font-weight: bold; }
+        .clay-icon { color: #d35400; font-weight: bold; }
+        .iron-icon { color: #7f8c8d; font-weight: bold; }
+        .crop-icon { color: #f39c12; font-weight: bold; }
+
+        /* Scorecard Layout (Used for both Inputs and Results) */
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 5px;
+            justify-content: center;
+        }
+        
+        /* Base Card Style */
+        .base-card {
+            background: #fff;
+            border: 1px solid #bdc3c7;
+            border-radius: 6px;
+            padding: 15px;
+            flex: 1 1 45%; /* Mobile: 2 per row */
+            min-width: 120px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        @media (min-width: 600px) {
+            .base-card { flex: 1; } /* Desktop: 4 in a row */
+        }
+
+        /* Input Specific Styling */
+        .input-card input {
+            width: 100%;
+            text-align: center;
+            border: 1px solid #ecf0f1;
+            border-radius: 4px;
+            padding: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            background: #fbfbfb;
+            margin-top: 5px;
+        }
+        .input-card input:focus {
+            border-color: #3498db;
+            background: #fff;
+            outline: none;
+        }
+
+        /* Labels and Values */
+        .card-label {
+            display: block;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .score-val {
+            display: block;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* Card Borders/Colors */
+        .card-wood { border-bottom: 3px solid #27ae60; }
+        .card-clay { border-bottom: 3px solid #d35400; }
+        .card-iron { border-bottom: 3px solid #7f8c8d; }
+        .card-crop { border-bottom: 3px solid #f39c12; }
+        .card-total { border-bottom: 3px solid #2980b9; margin-top: 10px; flex-basis: 100%; background: #eaf2f8; }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../../index.html" class="back-link">&larr; Back to Hub</a>
+        <h1>⚖️ Trade Routes</h1>
+
+        <div class="input-group">
+            <label style="margin-bottom: 10px; display:block;">Source Village Production (Hourly)</label>
+            <div class="card-container">
+                <div class="base-card input-card card-wood">
+                    <label class="card-label wood-icon">Wood</label>
+                    <input type="number" id="prodWood" value="6500" oninput="calculate()">
+                </div>
+                <div class="base-card input-card card-clay">
+                    <label class="card-label clay-icon">Clay</label>
+                    <input type="number" id="prodClay" value="6500" oninput="calculate()">
+                </div>
+                <div class="base-card input-card card-iron">
+                    <label class="card-label iron-icon">Iron</label>
+                    <input type="number" id="prodIron" value="6500" oninput="calculate()">
+                </div>
+                <div class="base-card input-card card-crop">
+                    <label class="card-label crop-icon">Crop</label>
+                    <input type="number" id="prodCrop" value="10500" oninput="calculate()">
+                </div>
+            </div>
+        </div>
+
+        <hr style="border:0; border-top:1px solid #bdc3c7; margin: 20px 0;">
+
+        <div class="input-row">
+            <div class="input-group" style="flex:1">
+                <label>Party Type</label>
+                <select id="partyType" onchange="calculate()">
+                    <option value="small">Small Celebration</option>
+                    <option value="big">Big Celebration</option>
+                </select>
+            </div>
+            <div class="input-group" style="flex:1">
+                <label>Parties per Day</label>
+                <input type="number" id="partiesPerDay" value="1" step="0.1" oninput="calculate()">
+            </div>
+        </div>
+
+        <div class="input-row">
+            <div class="input-group" style="flex:1">
+                <label>Trade Route Interval</label>
+                <select id="routeInterval" onchange="calculate()">
+                    <option value="5">Every 5 minutes</option>
+                    <option value="30">Every 30 minutes</option>
+                    <option value="60" selected>Every 1 hour</option>
+                    <option value="480">Every 8 hours</option>
+                    <option value="1440">Every 24 hours</option>
+                </select>
+            </div>
+            <div class="input-group" style="flex:1; display:flex; align-items:flex-end; justify-content:center; padding-bottom:12px;">
+                <label style="display:flex; align-items:center; cursor:pointer;">
+                    <input type="checkbox" id="roundRes" onchange="calculate()" style="width:auto; margin-right:8px;">
+                    Round Down (Hundreds)
+                </label>
+            </div>
+        </div>
+
+        <div id="results-area" class="result-box" style="display:none; text-align:left; background: transparent; border:none; box-shadow:none; padding:0;">
+            <div style="text-align:center; font-weight:bold; color:#16a085; margin-bottom:5px;">
+                Shipment Amount
+            </div>
+            <div style="text-align:center; font-size:0.85rem; color:#7f8c8d; margin-bottom:15px;">
+                Send this amount per route interval.
+            </div>
+
+            <div class="card-container">
+                <div class="base-card card-wood">
+                    <span class="card-label wood-icon">Wood</span>
+                    <span id="res-wood" class="score-val">0</span>
+                </div>
+                <div class="base-card card-clay">
+                    <span class="card-label clay-icon">Clay</span>
+                    <span id="res-clay" class="score-val">0</span>
+                </div>
+                <div class="base-card card-iron">
+                    <span class="card-label iron-icon">Iron</span>
+                    <span id="res-iron" class="score-val">0</span>
+                </div>
+                <div class="base-card card-crop">
+                    <span class="card-label crop-icon">Crop</span>
+                    <span id="res-crop" class="score-val">0</span>
+                </div>
+                <div class="base-card card-total">
+                    <span class="card-label" style="color:#2980b9;">Total Load</span>
+                    <span id="res-total" class="score-val">0</span>
+                </div>
+            </div>
+
+            <div id="warning-msg" style="color:#c0392b; font-size:0.9rem; margin-top:15px; display:none; text-align:center; background:#fadbd8; padding:10px; border-radius:4px; border:1px solid #e74c3c;">
+                ⚠️ Warning: Production is too low to sustain this party frequency!
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
